@@ -56,22 +56,18 @@ class Problem {
   }
 
   // El método para calcular el centroide del r-esimo cluster
-  vector<T> centroid(int r, vector<int> cluster) {
+  vector<T> centroid(vector<vector<T>> cluster) {
     vector<T> centroid;
-    for (int i = 0; i < cluster.size(); i++) {
+    for (int i = 0; i < cluster[0].size(); i++) {
       centroid.push_back(0);
     }
-    int count = 0;
     for (int i = 0; i < cluster.size(); i++) {
-      if (cluster[i] == r) {
-        for (int j = 0; j < k_; j++) {
-          centroid[j] += points_[i][j];
-        }
-        count++;
+      for (int j = 0; j < cluster[i].size(); j++) {
+        centroid[j] += cluster[i][j];
       }
     }
-    for (int i = 0; i < k_; i++) {
-      centroid[i] /= count;
+    for (int i = 0; i < centroid.size(); i++) {
+      centroid[i] /= cluster.size();
     }
     return centroid;
   }
