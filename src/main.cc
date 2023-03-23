@@ -7,5 +7,5 @@ int main(int argc, char** argv) {
   }
   string path = argv[1]; // archivo de entrada
   Problem<double> problem(path);
-  problem.print();
+  //problem.print();
 }
