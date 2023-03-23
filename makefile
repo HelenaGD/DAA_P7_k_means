@@ -11,7 +11,7 @@ LIBRARIES	:=
 EXECUTABLE	:= simulator
 TESTER	:= tester
 
-ARG := 
+ARG := instances/prob1.txt
 
 all: $(BIN)/$(EXECUTABLE)
 
