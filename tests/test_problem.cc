@@ -1,5 +1,6 @@
 #include <gtest/gtest.h>
 #include "../include/problem.h"
+#include "../include/solution.h"
 
 TEST(Problem, Constructor) {
   Problem<double> problem(3, 2, {{1, 2}, {3, 4}, {5, 6}});
@@ -28,6 +29,23 @@ TEST(Problem, centroid) {
   vector<vector<int>> cluster3 = {{1, 2, 3, 4}, {4, 5, 6, 7}, {7, 8, 9, 10}};
   Problem<int> problem3(3, 2, cluster3);
   EXPECT_EQ(problem3.centroid(cluster3), vector<int>({4, 5, 6, 7}));
+}
+
+TEST(Solution, Constructor) {
+  vector<vector<double>> cluster = {{1, 2, 3}, {3, 4, 5}};
+  vector<vector<vector<double>>> clusters = {cluster, cluster};
+  Problem<double> problem(3, 2, cluster);
+  Solution<double> solution(clusters);
+  EXPECT_EQ(solution.get_clusters(), clusters);
+}
+
+TEST(Solution, evaluate) {
+  vector<vector<double>> cluster = {{1, 2, 3}, {3, 4, 5}};
+  vector<vector<vector<double>>> clusters = {cluster, cluster};
+  Problem<double> problem(3, 2, cluster);
+  Solution<double> solution(clusters);
+  solution.evaluate(problem);
+  EXPECT_EQ(solution.get_sse(), 0);
 }
 
 // Ejecutamos los casos de prueba
