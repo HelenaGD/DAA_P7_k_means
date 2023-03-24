@@ -9,9 +9,11 @@ class Solution {
  private:
   typedef vector<vector<T>> Cluster;
   vector<Cluster> clusters_;
+  int num_clusters_;
   double sse_;
  public:
   Solution(vector<Cluster> clusters) {
+    num_clusters_ = clusters.size();
     clusters_ = clusters;
     sse_ = 0;
   }
@@ -35,5 +37,6 @@ class Solution {
   }
 
   double get_sse() { return sse_; }
-  vector<vector<vector<T>>> get_clusters() { return clusters_; }
+  vector<Cluster> get_clusters() { return clusters_; }
+  int get_num_clusters() { return num_clusters_; }
 };

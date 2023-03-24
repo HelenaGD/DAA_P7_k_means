@@ -1,5 +1,8 @@
 #include "../include/problem.h"
 #include "../include/formulas.h"
+#include "../include/solution.h"
+#include "../include/algorithm.h"
+#include "../include/voraz.h"
 
 int main(int argc, char** argv) {
   if (argc < 2) {
@@ -9,4 +12,5 @@ int main(int argc, char** argv) {
   string path = argv[1]; // archivo de entrada
   Problem<double> problem(path);
   //problem.print();
+  Algorithm<double>* algorithm = new Kmeans<double>();
 }
