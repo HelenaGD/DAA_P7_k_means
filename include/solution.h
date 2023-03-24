@@ -1,22 +1,35 @@
+#pragma once
+#include <vector>
+#include "formulas.h"
+
+using namespace std;
+
 template <typename T>
 class Solution {
  private:
-  vector<vector<vector<T>>> clusters_;
+  typedef vector<vector<T>> Cluster;
+  vector<Cluster> clusters_;
   double sse_;
  public:
-  Solution(vector<vector<vector<T>>> clusters) {
+  Solution(vector<Cluster> clusters) {
     clusters_ = clusters;
     sse_ = 0;
   }
 
-  void evaluate(Problem<T> problem) {
-    vector<T> centroid;
+  /**
+   * Método para evaluar la solución en función
+   * de la distancia de los puntos de cada cluster
+   * a su centroide
+  */
+  void evaluate() {
+    vector<T> the_centroid;
+    // Primero itero sobre los clusters
     for (int k = 0; k < clusters_.size(); k++) {
-      centroid = problem.centroid(clusters_[k].size());
+      the_centroid = centroid(clusters_[k]);
+      // Para todos los puntos del cluster
       for (int i = 0; i < clusters_[k].size(); i++) {
-        for (int j = 0; j < clusters_[k][i].size(); j++) {
-          sse_ += pow(problem.euclidean_distance(centroid, clusters_[i][j]), 2);
-        }
+        // Calculo la distancia euclidea entre el centroide y el punto
+        sse_ += pow(euclidean_distance(the_centroid, clusters_[k][i]), 2);
       }
     }
   }

@@ -1,4 +1,5 @@
 #include "../include/problem.h"
+#include "../include/formulas.h"
 
 int main(int argc, char** argv) {
   if (argc < 2) {
