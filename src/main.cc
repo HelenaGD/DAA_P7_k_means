@@ -20,6 +20,5 @@ int main(int argc, char** argv) {
   cout << "Clusters: " << solution.get_num_clusters() << endl;
   cout << "Centroids: " << endl;
   solution.print_centroids();
-  //solution.print_clusters();
   solution.store_solution();
 }
