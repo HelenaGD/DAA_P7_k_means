@@ -81,9 +81,10 @@ class Solution {
     }
   }
 
-  void store_solution(string filename = "solutions/solution.txt") {
+  void store_solution(string filename = "solution.txt") {
+    string path = "solutions/" + filename;
     ofstream file;
-    file.open(filename);
+    file.open(path);
     // Primero el resultado de la SSE
     file << sse_ << endl;
     // Luego el número de clusters
