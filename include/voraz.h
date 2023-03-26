@@ -16,6 +16,7 @@ class Kmeans : public Algorithm<T> { // K means
     // 10% del número de puntos, con un mínimo de 2 clusters
     int num_clusters = problem.get_m() * 0.1;
     if (num_clusters < 2) num_clusters = 2;
+    //cout << "Kmeans: " << num_clusters << " clusters" << endl;
 
     // Primero hay que elegir k puntos aletorios como centroides
     srand(time(nullptr));
@@ -23,19 +24,32 @@ class Kmeans : public Algorithm<T> { // K means
       int random_index = rand() % problem.get_m();
       centroids.push_back(problem.get_points()[random_index]);
     }
+    /*cout << "kmeans: Centroides elegidos aleatoriamente" << endl;
+    for (int i = 0; i < num_clusters; i++) {
+      cout << "kmeans: Centroid " << i << ": ";
+      for (int j = 0; j < centroids[i].size(); j++) {
+        cout << centroids[i][j] << " ";
+      }
+      cout << endl;
+    }*/
 
     // Defino un máximo de iteraciones
     int max_iterations = 100;
     bool centroids_changed = true;
     int iteration = 0;
 
+    // Inicializar los clusters
+    vector<Cluster> grupos(num_clusters);
+
     // Mientras los centroides cambien y no se alcance el máximo de iteraciones
     while (centroids_changed && iteration < max_iterations) {
       iteration++;
       centroids_changed = false;
 
-      // Inicializar los clusters
-      vector<Cluster> clusters(num_clusters);
+      // Vaciar los clusters
+      for (int i = 0; i < num_clusters; i++) {
+        grupos[i].clear();
+      }
 
       // Asignar cada punto al cluster cuyo centroide esté más cerca
       for (int i = 0; i < problem.get_m(); i++) {
@@ -49,12 +63,12 @@ class Kmeans : public Algorithm<T> { // K means
             closest_cluster = j;
           }
         }
-        clusters[closest_cluster].push_back(point);
+        grupos[closest_cluster].push_back(point);
       }
 
       // Calcular los nuevos centroides de cada cluster
       for (int i = 0; i < num_clusters; i++) {
-        vector<T> new_centroid = centroid(clusters[i]);
+        vector<T> new_centroid = centroid(grupos[i]);
         if (new_centroid != centroids[i]) {
           centroids[i] = new_centroid;
           centroids_changed = true;
@@ -63,12 +77,17 @@ class Kmeans : public Algorithm<T> { // K means
     }
 
     // Devolver la solución final
-    Solution<T> solution;
-    for (int i = 0; i < num_clusters; i++) {
-      for (int j = 0; j < clusters[i].size(); j++) {
-        solution.add(i, clusters[i][j]);
+    Solution<T> solution(grupos);
+
+    // Centroide
+    /*cout << "El centroides calculado en kmeans es: " << endl;
+    for (int i = 0; i < centroids.size(); i++) {
+      cout << "Centroid " << i << ": ";
+      for (int j = 0; j < centroids[i].size(); j++) {
+        cout << centroids[i][j] << " ";
       }
-    }
+      cout << endl;
+    }*/
     return solution;
   };
 };

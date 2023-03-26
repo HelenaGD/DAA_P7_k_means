@@ -13,4 +13,13 @@ int main(int argc, char** argv) {
   Problem<double> problem(path);
   //problem.print();
   Algorithm<double>* algorithm = new Kmeans<double>();
+
+  Solution<double> solution = algorithm->run(problem);
+  solution.evaluate();
+  cout << "SSE: " << solution.get_sse() << endl;
+  cout << "Clusters: " << solution.get_num_clusters() << endl;
+  cout << "Centroids: " << endl;
+  solution.print_centroids();
+  //solution.print_clusters();
+  solution.store_solution();
 }
