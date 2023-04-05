@@ -9,59 +9,65 @@ template <typename T>
 class GRASP : public Algorithm<T> { // Greedy Randomized Adaptive Search Procedure
  public:
   typedef vector<vector<T>> Cluster;
+  typedef std::pair<int, T> farthestElement;
   GRASP() : Algorithm<T>() {};
   ~GRASP() {};
   Solution<T> run(Problem<T> problem) {
-     
+    // Fase constructiva
+    //cout << "Inicia fase constructiva" << endl;
+    Cluster initial_solution = constructive_fase(problem);
+    //cout << "Finaliza fase constructiva. Tamaño de la solo ini: " << initial_solution.size() << endl << endl;
 
-    /*// Inicializo el conjunto de puntos
-    Cluster points = problem.get_points();
-
-    // Elegir un número inicial de clusters
-    // 10% del número de puntos, con un mínimo de 2 clusters
-    int num_clusters = points.size() * 0.1;
-    if (num_clusters < 2) num_clusters = 2;
-
-    // Generar la solución inicial vacía
-    vector<vector<T>> initial_solution(num_clusters);
-    vector<bool> point_assigned(points.size(), false);
-
-    // Bucle de generación de solución
-    while (true) {
-      // Generar la lista restringida de candidatos
-      vector<pair<int, double>> lrc = generate_lrc(points, initial_solution);
-
-      // Si no hay candidatos disponibles, hemos terminado
-      if (lrc.size() == 0) break;
-
-      // Elegir un punto al azar de la lista restringida
-      int random_index = rand() % lrc.size();
-      int point_index = lrc[random_index].first;
-      initial_solution[get_nearest_cluster(points[point_index], initial_solution)].push_back(points[point_index]);
-      point_assigned[point_index] = true;
+    // Fase de procesamiento
+    // Asigno los puntos a los clusters al punto de servicio más cercano
+    vector<Cluster> grupos(initial_solution.size());
+    for (int i = 0; i < problem.get_m(); i++) {
+      // Si el punto es uno de los clusteres, no lo añado
+      if (find(initial_solution.begin(), initial_solution.end(), problem.get_points()[i]) != initial_solution.end()) {
+        continue;
+      }
+      // Asigno cada punto al punto de servicio más cercano
+      int nearest_cluster = get_nearest_cluster(problem.get_points()[i], initial_solution);
+      grupos[nearest_cluster].push_back(problem.get_points()[i]);
     }
 
-    // Devolver la solución final
-    Solution<T> solution(initial_solution);
-    */
-    Solution<T> solution = constructive_fase(problem);
+    // Fase de mejora
+
+    // Creo la solución
+    Solution<T> solution(grupos, initial_solution);
+
     return solution;
   }
 
-  Solution<T> constructive_fase(Problem<T> problem) {
-    Cluster centroids;
+  int get_nearest_cluster(vector<T> point, Cluster clusters) {
+    vector<pair<int, double>> lrc_distances;
+    // Obtengo la distancia de cada punto de servicio al punto
+    for (int i = 0; i < clusters.size(); i++) {
+      double distance = euclidean_distance(point, clusters[i]);
+      lrc_distances.push_back(make_pair(i, distance));
+    }
+    sort(lrc_distances.begin(), lrc_distances.end(), [](pair<int, double> a, pair<int, double> b) {
+      return a.second < b.second;
+    });
+    int nearest_cluster = lrc_distances[0].first;
+    return nearest_cluster;
+  }
+
+  /**
+   * @brief Genera la solución inicial mediante la fase constructiva
+  */
+  Cluster constructive_fase(Problem<T> problem) {
+    Cluster service_points;
     // Elegir un número inicial de clusters
     // 10% del número de puntos, con un mínimo de 2 clusters
     int num_clusters = problem.get_m() * 0.1;
     if (num_clusters < 2) num_clusters = 2;
-    //cout << "Kmeans: " << num_clusters << " clusters" << endl;
+    //cout << "GRASP: " << num_clusters << " clusters" << endl;
 
-    // Primero hay que elegir k puntos aletorios como centroides
+    // Primero hay que elegir 1 punto aleatorio como centroide
     srand(time(nullptr));
-    for (int i = 0; i < num_clusters; i++) {
-      int random_index = rand() % problem.get_m();
-      centroids.push_back(problem.get_points()[random_index]);
-    }
+    int random_index = rand() % problem.get_m();
+    service_points.push_back(problem.get_points()[random_index]);
     /*cout << "kmeans: Centroides elegidos aleatoriamente" << endl;
     for (int i = 0; i < num_clusters; i++) {
       cout << "kmeans: Centroid " << i << ": ";
@@ -71,68 +77,35 @@ class GRASP : public Algorithm<T> { // Greedy Randomized Adaptive Search Procedu
       cout << endl;
     }*/
 
-    // Defino un máximo de iteraciones
-    int max_iterations = 100;
-    bool centroids_changed = true;
-    int iteration = 0;
+    do { // Hasta llegar al número de clusters elegido
+      std::vector<farthestElement> distances;
+      std::vector<farthestElement> bestKDistances;
+      farthestElement choosedElement;
 
-    // Inicializar los clusters
-    vector<Cluster> grupos(num_clusters);
-
-    // Mientras los centroides cambien y no se alcance el máximo de iteraciones
-    while (centroids_changed && iteration < max_iterations) {
-      iteration++;
-      centroids_changed = false;
-
-      // Vaciar los clusters
-      for (int i = 0; i < num_clusters; i++) {
-        grupos[i].clear();
-      }
-
-      // Ahora los puntos los asigno con la lrc
-      for (int i = 0; i < problem.get_m(); i++) {
-        vector<T> point = problem.get_points()[i];
-        double min_distance = numeric_limits<double>::max();
-        int random_best_cluster = get_nearest_cluster(point, centroids);
-        /*
-        for (int j = 0; j < num_clusters; j++) {
-          double distance = euclidean_distance(point, centroids[j]);
-          if (distance < min_distance) {
-            min_distance = distance;
-            closest_cluster = j;
-          }
-        }*/
-        grupos[random_best_cluster].push_back(point);
-      }
-
-      // Calcular los nuevos centroides de cada cluster
-      for (int i = 0; i < num_clusters; i++) {
-        vector<T> new_centroid = centroid(grupos[i]);
-        if (new_centroid != centroids[i]) {
-          centroids[i] = new_centroid;
-          centroids_changed = true;
+      // Calculo la distancia de todos los puntos a los servicios
+      for (int i = 0; i < problem.get_m(); i++) { // Para cada punto
+        T min_distance = std::numeric_limits<T>::max(); // Inicializo la distancia mínima a infinito
+        for (int j = 0; j < service_points.size(); j++) { // Para cada punto de servicio
+          T distance = euclidean_distance(problem.get_points()[i], service_points[j]); // Calculo la distancia
+          if (distance < min_distance) min_distance = distance; // Si es menor que la mínima, actualizo
         }
+        distances.push_back(std::make_pair(i, min_distance)); // Guardo el punto y su distancia
       }
-    }
+
+      // Ordeno los puntos por distancia más alejada
+      std::sort(distances.begin(), distances.end(), [](const farthestElement& a, const farthestElement& b) {
+        return a.second > b.second;
+      });
+
+      // Elijo aleatoriamente entre los 3 puntos más alejados
+      int random_index_dist = rand() % 3;
+      choosedElement = distances[random_index_dist];
+
+      // Añado el punto elegido a los puntos de servicio
+      service_points.push_back(problem.get_points()[choosedElement.first]);
+    } while (service_points.size() < num_clusters);
 
     // Devolver la solución final
-    Solution<T> solution(grupos);
-    return solution;
-  }
-
-  int get_nearest_cluster(vector<T> point, Cluster clusters) {
-    int nearest_cluster = 0;
-    vector<T> lrc;
-    vector<pair<int, double>> lrc_distances;
-    for (int i = 0; i < clusters.size(); i++) {
-      double distance = euclidean_distance(point, clusters[i]);
-      lrc_distances.push_back(make_pair(i, distance));
-    }
-    sort(lrc_distances.begin(), lrc_distances.end(), [](pair<int, double> a, pair<int, double> b) {
-      return a.second < b.second;
-    });
-    int random_index = rand() % lrc_distances.size();
-    nearest_cluster = lrc_distances[random_index].first;
-    return nearest_cluster;
+    return service_points;
   }
 };

@@ -11,10 +11,18 @@ class Solution {
   vector<Cluster> clusters_;
   int num_clusters_;
   double sse_;
+  Cluster service_points_;
  public:
   Solution(vector<Cluster> clusters) {
     num_clusters_ = clusters.size();
     clusters_ = clusters;
+    sse_ = 0;
+  }
+
+  Solution(vector<Cluster> clusters, Cluster service_points) {
+    num_clusters_ = clusters.size();
+    clusters_ = clusters;
+    service_points_ = service_points;
     sse_ = 0;
   }
 

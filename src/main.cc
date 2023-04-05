@@ -35,12 +35,6 @@ int main(int argc, char** argv) {
   string path = argv[1]; // archivo de entrada
   Problem<double> problem(path);
   //problem.print();
-  /*Algorithm<double>* algorithm = new Kmeans<double>();
-
-  execute("kmeans", algorithm, problem);
-
-  algorithm = new GRASP<double>();
-  execute("grasp", algorithm, problem);*/
   fs::path file_path(path);
   string file_name = file_path.filename().string();
   // Encontrar la posición del último punto
@@ -55,4 +49,11 @@ int main(int argc, char** argv) {
   GENERATOR generator;
   generator.generate(file_name, new_file_name + "_kmeans.csv", problem, 1);
   generator.generate(file_name, new_file_name + "_grasp.csv", problem, 2);
+
+  // Para hacer una sola ejecución y obtener el archivo con los grupos
+  /*Algorithm<double>* algorithm = new Kmeans<double>();
+  execute("kmeans", algorithm, problem);
+
+  algorithm = new GRASP<double>();
+  execute("grasp", algorithm, problem);*/
 }
