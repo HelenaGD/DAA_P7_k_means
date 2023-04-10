@@ -32,6 +32,10 @@ class GRASP : public Algorithm<T> { // Greedy Randomized Adaptive Search Procedu
     }
 
     // Evaluar la solución
+    // Evaluado al completo
+    Solution<T> solution(grupos, initial_solution);
+    solution.evaluate();
+    double best_sse = solution.get_sse();
 
     // Mejora local
 
@@ -161,4 +165,53 @@ class GRASP : public Algorithm<T> { // Greedy Randomized Adaptive Search Procedu
     }
     return grupos;
   }
+
+  double partial_evaluation(Cluster solution_old, Cluster solution_new, int old_sse) {
+    double new_sse = old_sse;
+    // Identificar el cambio que se hizo en la solución anterior
+    if (solution_new.size() < solution_old.size()) {
+      // Se eliminó un punto
+      int removed_index;
+      for (int i = 0; i < solution_old.size(); i++) {
+        if (solution_old[i].size() > solution_new[i].size()) {
+          removed_index = i;
+          break;
+        }
+      }
+      for (int i = 0; i < solution_new[removed_index].size(); i++) {
+        new_sse -= euclidean_distance(solution_old[removed_index][i], service_points_[removed_index]);
+      }
+    } else if (solution_new.size() > solution_old.size()) {
+      // Se añadió un punto
+      int added_index;
+      for (int i = 0; i < solution_new.size(); i++) {
+        if (solution_new[i].size() > solution_old[i].size()) {
+          added_index = i;
+          break;
+        }
+      }
+      for (int i = 0; i < solution_new[added_index].size(); i++) {
+        new_sse += euclidean_distance(solution_new[added_index][i], service_points_[added_index]);
+      }
+    } else {
+      // Se intercambiaron dos puntos
+      vector<int> changed_indices;
+      for (int i = 0; i < solution_new.size(); i++) {
+        for (int j = 0; j < solution_new[i].size(); j++) {
+          if (solution_new[i][j] != solution_old[i][j]) {
+            changed_indices.push_back(i);
+            break;
+          }
+        }
+      }
+      int index1 = changed_indices[0];
+      int index2 = changed_indices[1];
+      new_sse -= euclidean_distance(solution_old[index1][0], service_points_[index1]);
+      new_sse += euclidean_distance(solution_new[index2][0], service_points_[index2]);
+      new_sse -= euclidean_distance(solution_old[index2][0], service_points_[index2]);
+      new_sse += euclidean_distance(solution_new[index1][0], service_points_[index1]);
+    }
+    return new_sse;
+  }
+
 };
