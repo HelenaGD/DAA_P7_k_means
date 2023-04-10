@@ -25,13 +25,45 @@ class GRASP : public Algorithm<T> { // Greedy Randomized Adaptive Search Procedu
     // Evaluado al completo
     Solution<T> solution(grupos, initial_solution);
     solution.evaluate();
-    double new_sse = solution.get_sse();
+    double new_sse = std::numeric_limits<double>::infinity();
     double best_sse = solution.get_sse();
 
-    // BÚSQUEDA LOCAL
-    // Encuentro la mejor de las soluciones del entorno
-    Cluster actual_solution = busqueda_local(problem, initial_solution);
+    Cluster actual_solution;
 
+    // BÚSQUEDA LOCAL
+    cout << "Inicia búsqueda local" << endl;
+    int iterador = -1;
+    do {
+      iterador++;
+      cout << "Interacion " << iterador << endl;
+      // Encuentro la mejor de las soluciones del entorno
+      actual_solution = busqueda_local(problem, initial_solution);
+      cout << "Busqueda local hecha" << endl;
+      // procesamiento
+      //grupos = procesamiento(problem, actual_solution);
+        // Asigno los puntos a los clusters al punto de servicio más cercano
+        grupos.clear();
+        for (int i = 0; i < problem.get_m(); i++) {
+          // Si el punto es uno de los clusteres, no lo añado
+          if (find(initial_solution.begin(), initial_solution.end(), problem.get_points()[i]) != initial_solution.end()) {
+            continue;
+          }
+          // Asigno cada punto al punto de servicio más cercano
+          int nearest_cluster = get_nearest_cluster(problem.get_points()[i], initial_solution);
+          grupos[nearest_cluster].push_back(problem.get_points()[i]);
+        }
+      cout << "Procesamiento hecho" << endl;
+      // Evaluación
+      Solution<T> new_solution(grupos, actual_solution);
+      new_solution.evaluate();
+      new_sse = new_solution.get_sse();
+      if (new_sse < best_sse) {
+        best_sse = new_sse;
+        initial_solution = actual_solution;
+      }
+      cout << "Nueva ejecución" << endl;
+    } while (initial_solution != actual_solution);
+    cout << "Finaliza búsqueda local" << endl << endl;
     // Retorno la solución
     return solution;
   }

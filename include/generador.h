@@ -34,6 +34,9 @@ class GENERATOR {
       Solution<double> solution = algorithm->run(problem);
       solution.evaluate();
       t1 = clock();
+
+      delete algorithm; // Liberar memoria asignada a Algorithm<double>
+
       double time = (double(t1-t0)/CLOCKS_PER_SEC);
       Iteracion iteracion;
       iteracion.Identificador_ = name;
