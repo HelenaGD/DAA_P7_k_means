@@ -31,7 +31,9 @@ class GRASP : public Algorithm<T> { // Greedy Randomized Adaptive Search Procedu
       grupos[nearest_cluster].push_back(problem.get_points()[i]);
     }
 
-    // Fase de mejora
+    // Evaluar la solución
+
+    // Mejora local
 
     // Creo la solución
     Solution<T> solution(grupos, initial_solution);
@@ -107,5 +109,25 @@ class GRASP : public Algorithm<T> { // Greedy Randomized Adaptive Search Procedu
 
     // Devolver la solución final
     return service_points;
+  }
+
+  vector<Cluster> intercambio(Problem<T> problem, Cluster initial_solution) {
+    Cluster vecindario = problem.get_points();
+    vector<Cluster> grupos;
+    Cluster dummy;
+    // Ahora debo intercambiar los puntos de servicio por alguno de los puntos del entorno
+    for (int i = 0; i < initial_solution.size(); i++) {
+      for (int j = 0; j < vecindario.size(); j++) {
+        // Si el punto es uno de los clusteres, no lo añado
+        if (find(initial_solution.begin(), initial_solution.end(), vecindario[j]) != initial_solution.end()) {
+          continue;
+        }
+        // Intercambio el punto de servicio por el punto del entorno
+        dummy = initial_solution;
+        dummy[i] = vecindario[j];
+        grupos.push_back(dummy); // Añado la nueva solución vecina
+      }
+    }
+    return grupos;
   }
 };
