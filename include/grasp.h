@@ -19,6 +19,52 @@ class GRASP : public Algorithm<T> { // Greedy Randomized Adaptive Search Procedu
     //cout << "Finaliza fase constructiva. Tamaño de la solo ini: " << initial_solution.size() << endl << endl;
 
     // Fase de procesamiento
+    vector<Cluster> grupos = procesamiento(problem, initial_solution);
+
+    // Evaluar la solución
+    // Evaluado al completo
+    Solution<T> solution(grupos, initial_solution);
+    solution.evaluate();
+    double new_sse = solution.get_sse();
+    double best_sse = solution.get_sse();
+
+    // BÚSQUEDA LOCAL
+    // Encuentro la mejor de las soluciones del entorno
+    Cluster actual_solution = busqueda_local(problem, initial_solution);
+
+    // Retorno la solución
+    return solution;
+  }
+
+  Cluster busqueda_local(Problem<T> problem, Cluster initial_solution) {
+    // De todas las soluciones vecinas, encuentro la mejor
+    // Genero espacio de soluciones vecinas
+    vector<Cluster> vecinos = intercambio(problem, initial_solution);
+    // Encuentro la mejor solución vecina
+    double best_sse = 0;
+    Cluster best_solution;
+    for (int i = 0; i < vecinos.size(); i++) {
+      // Procesamiento
+      vector<Cluster> grupos = procesamiento(problem, vecinos[i]);
+      // Evaluación (Total. Intentar parcial)
+      Solution<T> new_solution(grupos, vecinos[i]);
+      new_solution.evaluate();
+      double new_sse = new_solution.get_sse();
+      if (new_sse < best_sse) {
+        best_solution = vecinos[i];
+        best_sse = new_sse;
+      }
+    }
+    return best_solution;
+  }
+
+  /*Cluster perturbacion(Problem<T> problem, Cluster initial_solution) {
+    // Genero espacio de soluciones vecinas
+    vector<Cluster> vecinos = intercambio(problem, initial_solution);
+    
+  }*/
+
+  vector<Cluster> procesamiento(Problem<T> problem, Cluster initial_solution) {
     // Asigno los puntos a los clusters al punto de servicio más cercano
     vector<Cluster> grupos(initial_solution.size());
     for (int i = 0; i < problem.get_m(); i++) {
@@ -30,19 +76,7 @@ class GRASP : public Algorithm<T> { // Greedy Randomized Adaptive Search Procedu
       int nearest_cluster = get_nearest_cluster(problem.get_points()[i], initial_solution);
       grupos[nearest_cluster].push_back(problem.get_points()[i]);
     }
-
-    // Evaluar la solución
-    // Evaluado al completo
-    Solution<T> solution(grupos, initial_solution);
-    solution.evaluate();
-    double best_sse = solution.get_sse();
-
-    // Mejora local
-
-    // Creo la solución
-    Solution<T> solution(grupos, initial_solution);
-
-    return solution;
+    return grupos;
   }
 
   int get_nearest_cluster(vector<T> point, Cluster clusters) {
@@ -153,7 +187,7 @@ class GRASP : public Algorithm<T> { // Greedy Randomized Adaptive Search Procedu
     return grupos;
   }
 
-  vector<Cluster> eliminación(Cluster initial_solution) {
+  vector<Cluster> eliminacion(Cluster initial_solution) {
     vector<Cluster> grupos;
     Cluster dummy;
     // Ahora debo eliminar un punto de servicio de la solución
@@ -165,53 +199,4 @@ class GRASP : public Algorithm<T> { // Greedy Randomized Adaptive Search Procedu
     }
     return grupos;
   }
-
-  double partial_evaluation(Cluster solution_old, Cluster solution_new, int old_sse) {
-    double new_sse = old_sse;
-    // Identificar el cambio que se hizo en la solución anterior
-    if (solution_new.size() < solution_old.size()) {
-      // Se eliminó un punto
-      int removed_index;
-      for (int i = 0; i < solution_old.size(); i++) {
-        if (solution_old[i].size() > solution_new[i].size()) {
-          removed_index = i;
-          break;
-        }
-      }
-      for (int i = 0; i < solution_new[removed_index].size(); i++) {
-        new_sse -= euclidean_distance(solution_old[removed_index][i], service_points_[removed_index]);
-      }
-    } else if (solution_new.size() > solution_old.size()) {
-      // Se añadió un punto
-      int added_index;
-      for (int i = 0; i < solution_new.size(); i++) {
-        if (solution_new[i].size() > solution_old[i].size()) {
-          added_index = i;
-          break;
-        }
-      }
-      for (int i = 0; i < solution_new[added_index].size(); i++) {
-        new_sse += euclidean_distance(solution_new[added_index][i], service_points_[added_index]);
-      }
-    } else {
-      // Se intercambiaron dos puntos
-      vector<int> changed_indices;
-      for (int i = 0; i < solution_new.size(); i++) {
-        for (int j = 0; j < solution_new[i].size(); j++) {
-          if (solution_new[i][j] != solution_old[i][j]) {
-            changed_indices.push_back(i);
-            break;
-          }
-        }
-      }
-      int index1 = changed_indices[0];
-      int index2 = changed_indices[1];
-      new_sse -= euclidean_distance(solution_old[index1][0], service_points_[index1]);
-      new_sse += euclidean_distance(solution_new[index2][0], service_points_[index2]);
-      new_sse -= euclidean_distance(solution_old[index2][0], service_points_[index2]);
-      new_sse += euclidean_distance(solution_new[index1][0], service_points_[index1]);
-    }
-    return new_sse;
-  }
-
 };
