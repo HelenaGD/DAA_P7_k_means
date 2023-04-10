@@ -130,4 +130,35 @@ class GRASP : public Algorithm<T> { // Greedy Randomized Adaptive Search Procedu
     }
     return grupos;
   }
+
+  vector<Cluster> insercion(Problem<T> problem, Cluster initial_solution) {
+    Cluster vecindario = problem.get_points();
+    vector<Cluster> grupos;
+    Cluster dummy;
+    // Ahora debo insertar un punto del entorno en la solución
+    for (int i = 0; i < vecindario.size(); i++) {
+      // Si el punto es uno de los clusteres, no lo añado
+      if (find(initial_solution.begin(), initial_solution.end(), vecindario[i]) != initial_solution.end()) {
+        continue;
+      }
+      // Inserto el punto del entorno en la solución
+      dummy = initial_solution;
+      dummy.push_back(vecindario[i]);
+      grupos.push_back(dummy); // Añado la nueva solución vecina
+    }
+    return grupos;
+  }
+
+  vector<Cluster> eliminación(Cluster initial_solution) {
+    vector<Cluster> grupos;
+    Cluster dummy;
+    // Ahora debo eliminar un punto de servicio de la solución
+    for (int i = 0; i < initial_solution.size(); i++) {
+      // Elimino el punto de servicio de la solución
+      dummy = initial_solution;
+      dummy.erase(dummy.begin() + i);
+      grupos.push_back(dummy); // Añado la nueva solución vecina
+    }
+    return grupos;
+  }
 };
