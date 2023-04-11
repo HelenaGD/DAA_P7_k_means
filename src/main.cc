@@ -48,7 +48,7 @@ int main(int argc, char** argv) {
 
   GENERATOR generator;
   //generator.generate(file_name, new_file_name + "_kmeans.csv", problem, 1);
-  generator.generate(file_name, new_file_name + "_grasp.csv", problem, 2);
+  generator.generate(file_name, new_file_name + "_grasp.csv", problem, 2, 1);
 
   // Para hacer una sola ejecución y obtener el archivo con los grupos
   /*Algorithm<double>* algorithm = new Kmeans<double>();

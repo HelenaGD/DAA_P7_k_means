@@ -55,14 +55,21 @@ class GRASP : public Algorithm<T> { // Greedy Randomized Adaptive Search Procedu
       cout << "Procesamiento hecho" << endl;
       // Evaluación
       Solution<T> new_solution(grupos, actual_solution);
+      cout << "Falla la evaluación" << endl;
       new_solution.evaluate();
+      cout << "Error" << endl;
       new_sse = new_solution.get_sse();
+      cout << "Evaluación hecha" << endl;
+      cout << "SSE actual: " << new_sse << endl;
+      cout << "SSE mejor: " << best_sse << endl;
+      cout << endl;
       if (new_sse < best_sse) {
         best_sse = new_sse;
         initial_solution = actual_solution;
+        solution = new_solution;
       }
       cout << "Nueva ejecución" << endl;
-    } while (initial_solution != actual_solution);
+    } while (new_sse > best_sse);
     cout << "Finaliza búsqueda local" << endl << endl;
     // Retorno la solución
     return solution;
@@ -72,8 +79,20 @@ class GRASP : public Algorithm<T> { // Greedy Randomized Adaptive Search Procedu
     // De todas las soluciones vecinas, encuentro la mejor
     // Genero espacio de soluciones vecinas
     vector<Cluster> vecinos = intercambio(problem, initial_solution);
+    /*cout << "Genero espacio de soluciones vecinas" << endl;
+    for (int i = 0; i < vecinos.size(); i++) {
+      cout << "Solución " << i << endl;
+      for (int j = 0; j < vecinos[i].size(); j++) {
+        cout << "Cluster " << j << endl;
+        for (int k = 0; k < vecinos[i][j].size(); k++) {
+          cout << vecinos[i][j][k] << " ";
+        }
+        cout << endl;
+      }
+      cout << endl;
+    }*/
     // Encuentro la mejor solución vecina
-    double best_sse = 0;
+    double best_sse = std::numeric_limits<T>::max();
     Cluster best_solution;
     for (int i = 0; i < vecinos.size(); i++) {
       // Procesamiento
@@ -86,6 +105,14 @@ class GRASP : public Algorithm<T> { // Greedy Randomized Adaptive Search Procedu
         best_solution = vecinos[i];
         best_sse = new_sse;
       }
+    }
+    cout << "Mejor solución encontrada: " << best_sse << endl;
+    for (int i = 0; i < best_solution.size(); i++) {
+      cout << "Cluster " << i << endl;
+      for (int j = 0; j < best_solution[i].size(); j++) {
+        cout << best_solution[i][j] << " ";
+      }
+      cout << endl;
     }
     return best_solution;
   }

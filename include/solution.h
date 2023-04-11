@@ -30,20 +30,22 @@ class Solution {
     sse_ = 0;
     vector<T> a_service_point;
     // Primero itero sobre los puntos de servicio
+    cout << "El numero de puntos de servicio es: " << service_points_.size() << endl;
     for (int k = 0; k < service_points_.size(); k++) {
       a_service_point = service_points_[k];
       // Punto de servicio
-      /*cout << "El punto de servicio en sse es: ";
-      for (int i = 0; i < the_centroid.size(); i++) {
-        cout << the_centroid[i] << " ";
+      cout << "El punto de servicio en sse es: ";
+      for (int i = 0; i < a_service_point.size(); i++) {
+        cout << a_service_point[i] << " ";
       }
-      cout << endl;*/
+      cout << endl;
 
       // Para todos los puntos del cluster
       for (int i = 0; i < clusters_[k].size(); i++) {
         // Calculo la distancia euclidea entre el punto de servicio y el punto
         sse_ += euclidean_distance(a_service_point, clusters_[k][i]);
       }
+      cout << "Punto evaluado" << endl;
     }
   }
 
