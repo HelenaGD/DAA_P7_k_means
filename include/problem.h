@@ -42,9 +42,9 @@ class Problem {
     }
   }
 
-  int get_m() { return m_;};
+  int get_m() const { return m_;};
   int get_n() { return n_;}
-  vector<vector<T>> get_points() { return points_;}
+  vector<vector<T>> get_points() const { return points_;}
 
   void print() {
     cout << "m: " << m_ << endl;

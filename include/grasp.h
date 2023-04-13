@@ -28,16 +28,19 @@ class GRASP : public Algorithm<T> { // Greedy Randomized Adaptive Search Procedu
     double new_sse = std::numeric_limits<double>::infinity();
     double best_sse = solution.get_sse();
 
-    Cluster actual_solution;
+    //Solution<T> the_actual_solution;
+    //Cluster actual_solution;
 
     // BÚSQUEDA LOCAL
-    cout << "Inicia búsqueda local" << endl;
-    int iterador = -1;
+    cout << endl << "Inicia búsqueda local" << endl;
+    Solution<T> optimo_local = local_search(problem, solution);
+    /*int iterador = 0;
     do {
       iterador++;
       cout << "Interacion " << iterador << endl;
       // Encuentro la mejor de las soluciones del entorno
-      actual_solution = busqueda_local(problem, initial_solution);
+      the_actual_solution = best_vecino(problem, initial_solution);
+      actual_solution = the_actual_solution.get_service_points();
       cout << "Busqueda local hecha" << endl;
       // procesamiento
       //grupos = procesamiento(problem, actual_solution);
@@ -54,11 +57,7 @@ class GRASP : public Algorithm<T> { // Greedy Randomized Adaptive Search Procedu
         }
       cout << "Procesamiento hecho" << endl;
       // Evaluación
-      Solution<T> new_solution(grupos, actual_solution);
-      cout << "Falla la evaluación" << endl;
-      new_solution.evaluate();
-      cout << "Error" << endl;
-      new_sse = new_solution.get_sse();
+      new_sse = the_actual_solution.get_sse();
       cout << "Evaluación hecha" << endl;
       cout << "SSE actual: " << new_sse << endl;
       cout << "SSE mejor: " << best_sse << endl;
@@ -66,21 +65,66 @@ class GRASP : public Algorithm<T> { // Greedy Randomized Adaptive Search Procedu
       if (new_sse < best_sse) {
         best_sse = new_sse;
         initial_solution = actual_solution;
-        solution = new_solution;
+        solution = the_actual_solution;
+      } else {
+        break;
       }
-      cout << "Nueva ejecución" << endl;
-    } while (new_sse > best_sse);
+      cout << endl << "Nueva ejecución" << endl;
+    } while (new_sse >= best_sse);*/
     cout << "Finaliza búsqueda local" << endl << endl;
     // Retorno la solución
-    return solution;
+    return optimo_local;
   }
 
-  Cluster busqueda_local(Problem<T> problem, Cluster initial_solution) {
+  Solution<T> local_search(const Problem<T>& problem, const Solution<T>& initial_solution) {
+    double best_sse = initial_solution.get_sse(); // La mejor solucion hasta el momento
+    
+    Solution<T> best_solution;
+    Cluster best_serv_points = initial_solution.get_service_points();
+
+    // Ahora, debo buscar la mejor solución vecina, y si cambia
+    // con respecto a la mejor solución hasta el momento, busco
+    // en ese vecindario
+
+    int iterador = 0;
+    while (true) {
+      iterador++;
+      cout << "Interacion " << iterador << endl;
+      // Encuentro la mejor de las soluciones del entorno
+      best_solution = best_vecino(problem, best_serv_points);
+      best_serv_points = best_solution.get_service_points();
+
+      // Procesamiento
+      vector<Cluster> grupos = procesamiento(problem, best_serv_points);
+
+      // Evaluación
+      Solution<T> new_solution(grupos, best_serv_points);
+      new_solution.evaluate();
+      double new_sse = new_solution.get_sse();
+
+      /*cout << "Evaluación hecha" << endl;
+      cout << "SSE actual: " << new_sse << endl;
+      cout << "SSE mejor: " << best_sse << endl;*/
+
+      if (new_sse < best_sse) {
+        cout << "El vecino es mejor que el actual" << endl;
+        best_sse = new_sse;
+        best_solution = new_solution;
+      } else {
+        break;
+      }
+    }
+
+    return best_solution;
+  }
+
+  Solution<T> best_vecino(const Problem<T>& problem, const Cluster& initial_solution) {
+    Solution<T> the_solution;
     // De todas las soluciones vecinas, encuentro la mejor
     // Genero espacio de soluciones vecinas
     vector<Cluster> vecinos = intercambio(problem, initial_solution);
-    /*cout << "Genero espacio de soluciones vecinas" << endl;
-    for (int i = 0; i < vecinos.size(); i++) {
+    cout << "Genero espacio de soluciones vecinas" << endl;
+    /*for (int i = 0; i < vecinos.size(); i++) {
       cout << "Solución " << i << endl;
       for (int j = 0; j < vecinos[i].size(); j++) {
         cout << "Cluster " << j << endl;
@@ -104,17 +148,19 @@ class GRASP : public Algorithm<T> { // Greedy Randomized Adaptive Search Procedu
       if (new_sse < best_sse) {
         best_solution = vecinos[i];
         best_sse = new_sse;
+        the_solution = new_solution;
       }
     }
-    cout << "Mejor solución encontrada: " << best_sse << endl;
-    for (int i = 0; i < best_solution.size(); i++) {
+    cout << "Mejor solución encontrada en el vecindario: " << best_sse << endl;
+    /*for (int i = 0; i < best_solution.size(); i++) {
       cout << "Cluster " << i << endl;
       for (int j = 0; j < best_solution[i].size(); j++) {
         cout << best_solution[i][j] << " ";
       }
       cout << endl;
-    }
-    return best_solution;
+    }*/
+
+    return the_solution;
   }
 
   /*Cluster perturbacion(Problem<T> problem, Cluster initial_solution) {
@@ -123,7 +169,7 @@ class GRASP : public Algorithm<T> { // Greedy Randomized Adaptive Search Procedu
     
   }*/
 
-  vector<Cluster> procesamiento(Problem<T> problem, Cluster initial_solution) {
+  vector<Cluster> procesamiento(const Problem<T>& problem, const Cluster& initial_solution) {
     // Asigno los puntos a los clusters al punto de servicio más cercano
     vector<Cluster> grupos(initial_solution.size());
     for (int i = 0; i < problem.get_m(); i++) {
@@ -138,7 +184,7 @@ class GRASP : public Algorithm<T> { // Greedy Randomized Adaptive Search Procedu
     return grupos;
   }
 
-  int get_nearest_cluster(vector<T> point, Cluster clusters) {
+  int get_nearest_cluster(const vector<T>& point, const Cluster& clusters) {
     vector<pair<int, double>> lrc_distances;
     // Obtengo la distancia de cada punto de servicio al punto
     for (int i = 0; i < clusters.size(); i++) {
@@ -155,7 +201,7 @@ class GRASP : public Algorithm<T> { // Greedy Randomized Adaptive Search Procedu
   /**
    * @brief Genera la solución inicial mediante la fase constructiva
   */
-  Cluster constructive_fase(Problem<T> problem) {
+  Cluster constructive_fase(const Problem<T>& problem) {
     Cluster service_points;
     // Elegir un número inicial de clusters
     // 10% del número de puntos, con un mínimo de 2 clusters
@@ -208,7 +254,7 @@ class GRASP : public Algorithm<T> { // Greedy Randomized Adaptive Search Procedu
     return service_points;
   }
 
-  vector<Cluster> intercambio(Problem<T> problem, Cluster initial_solution) {
+  vector<Cluster> intercambio(const Problem<T>& problem, const Cluster& initial_solution) {
     Cluster vecindario = problem.get_points();
     vector<Cluster> grupos;
     Cluster dummy;
@@ -228,7 +274,7 @@ class GRASP : public Algorithm<T> { // Greedy Randomized Adaptive Search Procedu
     return grupos;
   }
 
-  vector<Cluster> insercion(Problem<T> problem, Cluster initial_solution) {
+  vector<Cluster> insercion(const Problem<T>& problem, const Cluster& initial_solution) {
     Cluster vecindario = problem.get_points();
     vector<Cluster> grupos;
     Cluster dummy;
@@ -246,7 +292,7 @@ class GRASP : public Algorithm<T> { // Greedy Randomized Adaptive Search Procedu
     return grupos;
   }
 
-  vector<Cluster> eliminacion(Cluster initial_solution) {
+  vector<Cluster> eliminacion(const Cluster& initial_solution) {
     vector<Cluster> grupos;
     Cluster dummy;
     // Ahora debo eliminar un punto de servicio de la solución

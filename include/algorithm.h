@@ -1,5 +1,6 @@
 #pragma once
 #include "../include/solution.h"
+#include <limits>
 
 template <typename T>
 class Algorithm {

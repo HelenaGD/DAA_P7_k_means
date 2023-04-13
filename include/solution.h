@@ -13,6 +13,10 @@ class Solution {
   double sse_;
   Cluster service_points_;
  public:
+  Solution() {
+    num_clusters_ = 0;
+    sse_ = 0;
+  }
   Solution(vector<Cluster> clusters) {
     num_clusters_ = clusters.size();
     clusters_ = clusters;
@@ -30,22 +34,22 @@ class Solution {
     sse_ = 0;
     vector<T> a_service_point;
     // Primero itero sobre los puntos de servicio
-    cout << "El numero de puntos de servicio es: " << service_points_.size() << endl;
+    //cout << "El numero de puntos de servicio es: " << service_points_.size() << endl;
     for (int k = 0; k < service_points_.size(); k++) {
       a_service_point = service_points_[k];
       // Punto de servicio
-      cout << "El punto de servicio en sse es: ";
+      /*cout << "El punto de servicio en sse es: ";
       for (int i = 0; i < a_service_point.size(); i++) {
         cout << a_service_point[i] << " ";
       }
-      cout << endl;
+      cout << endl;*/
 
       // Para todos los puntos del cluster
       for (int i = 0; i < clusters_[k].size(); i++) {
         // Calculo la distancia euclidea entre el punto de servicio y el punto
         sse_ += euclidean_distance(a_service_point, clusters_[k][i]);
       }
-      cout << "Punto evaluado" << endl;
+      //cout << "Punto evaluado" << endl;
     }
   }
 
@@ -126,7 +130,7 @@ class Solution {
     }
   }
 
-  double get_sse() { return sse_; }
+  double get_sse() const { return sse_; }
   vector<Cluster> get_clusters() { return clusters_; }
   int get_num_clusters() { return num_clusters_; }
 
@@ -137,6 +141,8 @@ class Solution {
     }
     return centroids;
   }
+
+  Cluster get_service_points() const { return service_points_; }
 
   void print_centroids() {
     Cluster centroids = get_centroids();
@@ -191,5 +197,15 @@ class Solution {
       file << endl;
     }
     file.close();
+  }
+
+  Solution<T>& operator=(const Solution<T>& other) {
+    if (this != &other) {
+      num_clusters_ = other.num_clusters_;
+      clusters_ = other.clusters_;
+      sse_ = other.sse_;
+      service_points_ = other.service_points_;
+    }
+    return *this;
   }
 };
