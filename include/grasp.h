@@ -87,6 +87,7 @@ class GRASP : public Algorithm<T> { // Greedy Randomized Adaptive Search Procedu
     // en ese vecindario
 
     int iterador = 0;
+    Solution<T> current_best_solution = initial_solution;
     while (true) {
       iterador++;
       cout << "Interacion " << iterador << endl;
@@ -109,13 +110,13 @@ class GRASP : public Algorithm<T> { // Greedy Randomized Adaptive Search Procedu
       if (new_sse < best_sse) {
         cout << "El vecino es mejor que el actual" << endl;
         best_sse = new_sse;
-        best_solution = new_solution;
+        current_best_solution = new_solution; // Actualizo la mejor solución actual
       } else {
         break;
       }
     }
 
-    return best_solution;
+    return current_best_solution;
   }
 
   Solution<T> best_vecino(const Problem<T>& problem, const Cluster& initial_solution) {
