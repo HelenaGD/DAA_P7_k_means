@@ -29,15 +29,15 @@ class GRASP : public Algorithm<T> { // Greedy Randomized Adaptive Search Procedu
     double best_sse = solution.get_sse();
 
     // BÚSQUEDA LOCAL
-    //cout << endl << "Inicia búsqueda local" << endl;
-    Solution<T> optimo_local = local_search(problem, solution);
-    //cout << "Finaliza búsqueda local" << endl << endl;
-    
+    cout << endl << "Inicia búsqueda local" << endl;
+    Solution<T> optimo_local = local_search(problem, solution, 1);
+    cout << "Finaliza búsqueda local" << endl << endl;
+
     // Retorno la solución
     return optimo_local;
   }
 
-  Solution<T> local_search(const Problem<T>& problem, const Solution<T>& initial_solution) {
+  Solution<T> local_search(const Problem<T>& problem, const Solution<T>& initial_solution, const int& movimiento = 0) {
     double best_sse = initial_solution.get_sse(); // La mejor solucion hasta el momento
     
     Solution<T> best_solution;
@@ -47,13 +47,17 @@ class GRASP : public Algorithm<T> { // Greedy Randomized Adaptive Search Procedu
     // con respecto a la mejor solución hasta el momento, busco
     // en ese vecindario
 
-    //int iterador = 0;
+    int iterador = 0;
     Solution<T> current_best_solution = initial_solution;
     while (true) {
-      //iterador++;
-      //cout << "Interacion " << iterador << endl;
+      iterador++;
+      cout << "Interacion " << iterador << endl;
       // Encuentro la mejor de las soluciones del entorno
-      best_solution = best_vecino(problem, best_serv_points);
+      // Si ya no queda entorno por generar, termino
+      if (best_serv_points.size() == problem.get_m()) {
+        break;
+      }
+      best_solution = best_vecino(problem, best_serv_points, movimiento);
       best_serv_points = best_solution.get_service_points();
 
       // Procesamiento
@@ -80,12 +84,24 @@ class GRASP : public Algorithm<T> { // Greedy Randomized Adaptive Search Procedu
     return current_best_solution;
   }
 
-  Solution<T> best_vecino(const Problem<T>& problem, const Cluster& initial_solution) {
+  Solution<T> best_vecino(const Problem<T>& problem, const Cluster& initial_solution, const int& movimiento = 0) {
     Solution<T> the_solution;
     // De todas las soluciones vecinas, encuentro la mejor
     // Genero espacio de soluciones vecinas
-    vector<Cluster> vecinos = intercambio(problem, initial_solution);
-    //cout << "Genero espacio de soluciones vecinas" << endl;
+    vector<Cluster> vecinos;
+    switch (movimiento) {
+      case 0:
+        vecinos = intercambio(problem, initial_solution);
+        break;
+      case 1:
+        vecinos = insercion(problem, initial_solution);
+        break;
+      case 2:
+        vecinos = eliminacion(initial_solution);
+        break;
+    }
+    cout << "Genero espacio de soluciones vecinas" << endl;
+    cout << "Tamano del espacio: " << vecinos.size() << endl;
     /*for (int i = 0; i < vecinos.size(); i++) {
       cout << "Solución " << i << endl;
       for (int j = 0; j < vecinos[i].size(); j++) {

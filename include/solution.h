@@ -169,7 +169,37 @@ class Solution {
     }
   }
 
-  void store_solution(string filename = "solution.txt") {
+  void store_solution(const string& filename = "solution.txt") {
+    string path = "solutions/" + filename;
+    ofstream file;
+    file.open(path);
+    // Primero el resultado de la SSE
+    file << sse_ << endl;
+    // Luego el número de clusters
+    file << clusters_.size() << endl;
+    // Luego los puntos de servicio
+    Cluster centroids = get_service_points();
+    for (int i = 0; i < centroids.size(); i++) {
+      for (int j = 0; j < centroids[i].size(); j++) {
+        file << centroids[i][j] << " ";
+      }
+      file << endl;
+    }
+    // Finalmente los clusters
+    for (int i = 0; i < clusters_.size(); i++) {
+      file << "Cluster " << i << ": " << endl;
+      for (int j = 0; j < clusters_[i].size(); j++) {
+        for (int k = 0; k < clusters_[i][j].size(); k++) {
+          file << clusters_[i][j][k] << " ";
+        }
+        file << endl;
+      }
+      file << endl;
+    }
+    file.close();
+  }
+
+  void store_solution_old(const string& filename = "solution.txt") {
     string path = "solutions/" + filename;
     ofstream file;
     file.open(path);

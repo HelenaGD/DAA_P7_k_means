@@ -12,7 +12,7 @@ using namespace std;
 
 namespace fs = std::filesystem;
 
-void execute(string file, Algorithm<double>* algorithm, Problem<double> problem) {
+void execute(const string& file, Algorithm<double>* algorithm, const Problem<double>& problem) {
   unsigned t0, t1;
   t0 = clock();
   Solution<double> solution = algorithm->run(problem);
@@ -48,12 +48,12 @@ int main(int argc, char** argv) {
 
   GENERATOR generator;
   //generator.generate(file_name, new_file_name + "_kmeans.csv", problem, 1);
-  generator.generate(file_name, new_file_name + "_grasp.csv", problem, 2);
+  //generator.generate(file_name, new_file_name + "_grasp.csv", problem, 2);
 
   // Para hacer una sola ejecución y obtener el archivo con los grupos
-  /*Algorithm<double>* algorithm = new Kmeans<double>();
-  execute("kmeans", algorithm, problem);
+  Algorithm<double>* algorithm = new Kmeans<double>();
+  //execute("kmeans", algorithm, problem);
 
   algorithm = new GRASP<double>();
-  execute("grasp", algorithm, problem);*/
+  execute("grasp", algorithm, problem);
 }
