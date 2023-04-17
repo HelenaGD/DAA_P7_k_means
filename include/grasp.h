@@ -44,7 +44,7 @@ class GRASP : public Algorithm<T> { // Greedy Randomized Adaptive Search Procedu
     return solution;
   }
 
-  Solution<T> run_local(Problem<T> problem) { // Búsqueda local. Solo una estructura.
+  Solution<T> run(Problem<T> problem) { // Búsqueda local. Solo una estructura.
     // Fase constructiva
     //cout << "Inicia fase constructiva" << endl;
     Cluster initial_solution = constructive_fase(problem);
@@ -62,14 +62,14 @@ class GRASP : public Algorithm<T> { // Greedy Randomized Adaptive Search Procedu
 
     // BÚSQUEDA LOCAL
     cout << endl << "Inicia búsqueda local" << endl;
-    Solution<T> optimo_local = local_search(problem, solution, 1);
+    Solution<T> optimo_local = local_search(problem, solution, 2);
     cout << "Finaliza búsqueda local" << endl << endl;
 
     // Retorno la solución
     return optimo_local;
   }
 
-  Solution<T> run (Problem<T> problem) { // GVNS (RVNS + VND)
+  Solution<T> run_GVNS (Problem<T> problem) { // GVNS (RVNS + VND)
     // Fase constructiva
     cout << "Inicia fase constructiva" << endl;
     Cluster initial_solution = constructive_fase(problem);
@@ -280,8 +280,8 @@ class GRASP : public Algorithm<T> { // Greedy Randomized Adaptive Search Procedu
         vecinos = eliminacion(initial_solution);
         break;
     }
-    cout << "Genero espacio de soluciones vecinas" << endl;
-    cout << "Tamano del espacio: " << vecinos.size() << endl;
+    //cout << "Genero espacio de soluciones vecinas" << endl;
+    //cout << "Tamano del espacio: " << vecinos.size() << endl;
     /*for (int i = 0; i < vecinos.size(); i++) {
       cout << "Solución " << i << endl;
       for (int j = 0; j < vecinos[i].size(); j++) {
@@ -296,9 +296,12 @@ class GRASP : public Algorithm<T> { // Greedy Randomized Adaptive Search Procedu
     // Encuentro la mejor solución vecina
     double best_sse = std::numeric_limits<T>::max();
     Cluster best_solution;
+    //cout << "Encuentro la mejor solución vecina" << endl << endl;
     for (int i = 0; i < vecinos.size(); i++) {
       // Procesamiento
+      //cout << "Procesamiento" << endl;
       vector<Cluster> grupos = procesamiento(problem, vecinos[i]);
+      //cout << "procesamiento hecho" << endl;
       // Evaluación (Total. Intentar parcial)
       Solution<T> new_solution(grupos, vecinos[i]);
       new_solution.evaluate();
@@ -346,6 +349,7 @@ class GRASP : public Algorithm<T> { // Greedy Randomized Adaptive Search Procedu
     sort(lrc_distances.begin(), lrc_distances.end(), [](pair<int, double> a, pair<int, double> b) {
       return a.second < b.second;
     });
+    //cout << "nearest_cluster. lrc size: " << lrc_distances.size() << endl;
     int nearest_cluster = lrc_distances[0].first;
     return nearest_cluster;
   }
@@ -448,6 +452,10 @@ class GRASP : public Algorithm<T> { // Greedy Randomized Adaptive Search Procedu
   }
 
   vector<Cluster> eliminacion(const Cluster& initial_solution) {
+    if (initial_solution.size() == 2) { // Número mínimo de puntos de servicio = 2
+      cout << RED << "No se puede eliminar más" << RESET << endl;
+      return vector<Cluster> {initial_solution};
+    }
     vector<Cluster> grupos;
     Cluster dummy;
     // Ahora debo eliminar un punto de servicio de la solución
