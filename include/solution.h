@@ -51,6 +51,8 @@ class Solution {
       }
       //cout << "Punto evaluado" << endl;
     }
+    // añado una penalización por cantidad de puntos
+    sse_ += 4 * service_points_.size();
   }
 
   /*double partial_evaluation(Solution<T> old_solution) {
