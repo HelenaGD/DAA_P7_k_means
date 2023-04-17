@@ -177,22 +177,23 @@ class GRASP : public Algorithm<T> { // Greedy Randomized Adaptive Search Procedu
       if (optimo_local.get_sse() < the_solution.get_sse()) {
         // Se actualiza la solución
         the_solution = optimo_local;
-        // Si se ha actualizado con una estructura que no es la primera, reseta
-        // las estructuras anteriores
-        if (estructura > 0) {
-          reset_movements();
+      } // Si no, es que ya era óptimo
+
+      // Si se ha actualizado con una estructura que no es la primera, reseta
+      // las estructuras anteriores
+      if (estructura > 0) {
+        reset_movements();
+      } else {
+        // Se pasa a la siguiente estructura de entorno
+        if (estructura < movements_VND_.size() - 1) {
+          movements_VND_[estructura + 1] = true;
         } else {
-          // Se pasa a la siguiente estructura de entorno
-          if (estructura < movements_VND_.size() - 1) {
-            movements_VND_[estructura + 1] = true;
-          } else {
-            // Si ya se han explorado todas las estructuras, se termina
-            if (all_movements_VND_true()) {
-              break;
-            }
+          // Si ya se han explorado todas las estructuras, se termina
+          if (all_movements_VND_true()) {
+            break;
           }
         }
-      } // Si no, es que ya era óptimo
+      }
     }
 
     return the_solution;
