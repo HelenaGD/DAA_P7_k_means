@@ -174,25 +174,24 @@ class GRASP : public Algorithm<T> { // Greedy Randomized Adaptive Search Procedu
       // Se realiza la búsqueda local con la estructura de entorno correspondiente
       Solution<T> optimo_local = local_search(problem, the_solution, estructura);
 
-      if (optimo_local.get_sse() < the_solution.get_sse()) {
+      if (optimo_local.get_sse() < the_solution.get_sse()) { // Si mejoro con esa estructura
         // Se actualiza la solución
         the_solution = optimo_local;
-        // Si se ha actualizado con una estructura que no es la primera, reseta
-        // las estructuras anteriores
-        if (estructura > 0) {
+        // Si no estaba usando la primera, vuelvo a ella
+        if (estructura != 0) {
           reset_movements();
         } else {
-          // Se pasa a la siguiente estructura de entorno
-          if (estructura < movements_VND_.size() - 1) {
-            movements_VND_[estructura + 1] = true;
-          } else {
-            // Si ya se han explorado todas las estructuras, se termina
-            if (all_movements_VND_true()) {
-              break;
-            }
-          }
+          // Si estaba usando la primera, activo la siguiente
+          movements_VND_[estructura + 1] = true;}
+      } else {
+        // Si no mejoro con esa estructura, y todavía quedan estructuras por probar, se prueba la siguiente
+        if (estructura < movements_VND_.size() - 1) {
+          movements_VND_[estructura + 1] = true;
+        } else {
+          // Si no quedan estructuras por probar, se termina
+          break;
         }
-      } // Si no, es que ya era óptimo
+      }
     }
 
     return the_solution;
