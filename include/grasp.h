@@ -24,6 +24,7 @@ class GRASP : public Algorithm<T> { // Greedy Randomized Adaptive Search Procedu
     for (int i = 0; i < movements_VND_.size(); i++) {
       movements_VND_[i] = false;
     }
+    movements_VND_[0] = true;
   };
 
   Solution<T> run_grasp(Problem<T> problem) { // Sólo GRASP
@@ -161,11 +162,10 @@ class GRASP : public Algorithm<T> { // Greedy Randomized Adaptive Search Procedu
   Solution<T> VND (const Problem<T>& problem, const Solution<T>& solution) {
     // Se comienza por la primera estructura de entorno
     cout << "Reseteando estructuras de entorno" << endl;
-    reset_movements();
+    reset_movements(); // Se activa solo la primera estructura de entorno
     cout << "Se activa la primera" << endl;
-    movements_VND_[0] = true; // Se activa la primera estructura de entorno
     Solution<T> the_solution = solution;
-    cout << "Comienza búsqueda local" << endl;
+    cout << "Comienza VND" << endl;
     while (true) { // Mientras quede alguna estructura activa
       // Se explora con la estructura de entorno correspondiente
       int estructura = get_last_estructura_VND();
@@ -177,30 +177,29 @@ class GRASP : public Algorithm<T> { // Greedy Randomized Adaptive Search Procedu
       if (optimo_local.get_sse() < the_solution.get_sse()) {
         // Se actualiza la solución
         the_solution = optimo_local;
-      } // Si no, es que ya era óptimo
-
-      // Si se ha actualizado con una estructura que no es la primera, reseta
-      // las estructuras anteriores
-      if (estructura > 0) {
-        reset_movements();
-      } else {
-        // Se pasa a la siguiente estructura de entorno
-        if (estructura < movements_VND_.size() - 1) {
-          movements_VND_[estructura + 1] = true;
+        // Si se ha actualizado con una estructura que no es la primera, reseta
+        // las estructuras anteriores
+        if (estructura > 0) {
+          reset_movements();
         } else {
-          // Si ya se han explorado todas las estructuras, se termina
-          if (all_movements_VND_true()) {
-            break;
+          // Se pasa a la siguiente estructura de entorno
+          if (estructura < movements_VND_.size() - 1) {
+            movements_VND_[estructura + 1] = true;
+          } else {
+            // Si ya se han explorado todas las estructuras, se termina
+            if (all_movements_VND_true()) {
+              break;
+            }
           }
         }
-      }
+      } // Si no, es que ya era óptimo
     }
 
     return the_solution;
   }
 
   int get_last_estructura_VND() {
-    int index = 0;
+    int index = -1;
     for (int i = 0; i < movements_VND_.size(); i++) {
       if (movements_VND_[i] == true) {
         index = i;
