@@ -44,7 +44,7 @@ class GRASP : public Algorithm<T> { // Greedy Randomized Adaptive Search Procedu
     return solution;
   }
 
-  Solution<T> run(Problem<T> problem) { // Búsqueda local. Solo una estructura.
+  Solution<T> run_local_search(Problem<T> problem) { // Búsqueda local. Solo una estructura.
     // Fase constructiva
     //cout << "Inicia fase constructiva" << endl;
     Cluster initial_solution = constructive_fase(problem);
@@ -69,32 +69,35 @@ class GRASP : public Algorithm<T> { // Greedy Randomized Adaptive Search Procedu
     return optimo_local;
   }
 
-  Solution<T> run_GVNS (Problem<T> problem) { // GVNS (RVNS + VND)
+  Solution<T> run (Problem<T> problem) { // GVNS (RVNS + VND)
     // Fase constructiva
-    cout << "Inicia fase constructiva" << endl;
+    //cout << "Inicia fase constructiva" << endl;
     Cluster initial_solution = constructive_fase(problem);
 
     // Fase de procesamiento
     vector<Cluster> grupos = procesamiento(problem, initial_solution);
 
     Solution<T> solution(grupos, initial_solution);
+    solution.evaluate();
 
     // Se comienza RVNS + VND
-    cout << "Inicia GVNS" << endl;
-    solution = RVNS(problem, solution);
-    return solution;
+    //cout << "Inicia GVNS" << endl;
+    return RVNS(problem, solution);
   }
 
   Solution<T> RVNS (const Problem<T>& problem, const Solution<T>& solution) {
     k_ = 1; // Se comienza perturbando solo un punto de la solución cada vez
     const int k_max = 3; // Puntos que se perturbarán como máximo
     Solution<T> best_solution = solution;
+
+    //cout << CYAN << "Inicial sse: " << best_solution.get_sse() << RESET << endl << endl;
+    
     while (k_ <= k_max) {
       // Se genera el entorno teniendo en cuenta el número de puntos que se perturbarán
-      cout << CYAN << "Generando entorno. K = " << k_ << RESET << endl;
+      //cout << CYAN << "Generando entorno. K = " << k_ << RESET << endl;
       vector<Cluster> entorno = generate_entorno(problem, solution, k_);
-      vector<Cluster> entorno_2 = intercambio(problem, solution.get_service_points());
-      cout << "Entorno generado. Tamaño: " << entorno.size() << endl << endl;
+      //vector<Cluster> entorno_2 = intercambio(problem, solution.get_service_points());
+      //cout << "Entorno generado. Tamaño: " << entorno.size() << endl << endl;
       // Se elige una solución aleatoria del entorno (Salto aleatorio)
       int random_index = rand() % entorno.size();
       Cluster solucion_al_azar = entorno[random_index];
@@ -106,9 +109,12 @@ class GRASP : public Algorithm<T> { // Greedy Randomized Adaptive Search Procedu
       solucion_procesada.evaluate();
 
       // Se aplica la búsqueda local
-      cout << "Inicia búsqueda local VND" << endl;
+      //cout << "Inicia búsqueda local VND" << endl;
       Solution<T> optimo_local = VND(problem, solucion_procesada);
-      cout << "Finaliza búsqueda local VND" << endl << endl;
+      //cout << "Finaliza búsqueda local VND" << endl << endl;
+
+      //cout << "SSE de la solución procesada: " << optimo_local.get_sse() << endl;
+      //cout << "SSE de la mejor solución: " << best_solution.get_sse() << endl << endl;
      
       // Se compara la solución con la mejor solución
       if (optimo_local.get_sse() < best_solution.get_sse()) {
@@ -120,6 +126,7 @@ class GRASP : public Algorithm<T> { // Greedy Randomized Adaptive Search Procedu
         k_++;
       }
     }
+    //cout << "Finaliza GVNS. Sse: " << best_solution.get_sse() << endl << endl;
     return best_solution;
   }
 
@@ -161,18 +168,18 @@ class GRASP : public Algorithm<T> { // Greedy Randomized Adaptive Search Procedu
 
   Solution<T> VND (const Problem<T>& problem, const Solution<T>& solution) {
     // Se comienza por la primera estructura de entorno
-    cout << "Reseteando estructuras de entorno" << endl;
     reset_movements(); // Se activa solo la primera estructura de entorno
-    cout << "Se activa la primera" << endl;
     Solution<T> the_solution = solution;
-    cout << "Comienza VND" << endl;
     while (true) { // Mientras quede alguna estructura activa
       // Se explora con la estructura de entorno correspondiente
       int estructura = get_last_estructura_VND();
-      cout << RED << "Estructura: " << estructura << RESET << endl << endl;
+      //cout << RED << "Estructura: " << estructura << RESET << endl;
 
       // Se realiza la búsqueda local con la estructura de entorno correspondiente
       Solution<T> optimo_local = local_search(problem, the_solution, estructura);
+
+      //cout << "SSE de la solución: " << the_solution.get_sse() << endl;
+      //cout << "SSE del optimo local: " << optimo_local.get_sse() << endl;
 
       if (optimo_local.get_sse() < the_solution.get_sse()) { // Si mejoro con esa estructura
         // Se actualiza la solución
@@ -180,6 +187,7 @@ class GRASP : public Algorithm<T> { // Greedy Randomized Adaptive Search Procedu
         // Si no estaba usando la primera, vuelvo a ella
         if (estructura != 0) {
           reset_movements();
+          //cout << "Se activa la primera" << endl;
         } else {
           // Si estaba usando la primera, activo la siguiente
           movements_VND_[estructura + 1] = true;}
@@ -231,7 +239,7 @@ class GRASP : public Algorithm<T> { // Greedy Randomized Adaptive Search Procedu
     Solution<T> current_best_solution = initial_solution;
     while (true) {
       iterador++;
-      cout << "Interacion " << iterador << endl;
+      //cout << "Iteracion " << iterador << endl;
       // Encuentro la mejor de las soluciones del entorno
       // Si ya no queda entorno por generar, termino
       if (best_serv_points.size() == problem.get_m()) {
