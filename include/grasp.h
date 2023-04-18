@@ -87,7 +87,7 @@ class GRASP : public Algorithm<T> { // Greedy Randomized Adaptive Search Procedu
 
   Solution<T> RVNS (const Problem<T>& problem, const Solution<T>& solution) {
     k_ = 1; // Se comienza perturbando solo un punto de la solución cada vez
-    const int k_max = 3; // Puntos que se perturbarán como máximo
+    const int k_max = 2; // Puntos que se perturbarán como máximo
     Solution<T> best_solution = solution;
 
     //cout << CYAN << "Inicial sse: " << best_solution.get_sse() << RESET << endl << endl;
