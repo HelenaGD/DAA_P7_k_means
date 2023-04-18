@@ -87,7 +87,7 @@ class GRASP : public Algorithm<T> { // Greedy Randomized Adaptive Search Procedu
 
   Solution<T> RVNS (const Problem<T>& problem, const Solution<T>& solution) {
     k_ = 1; // Se comienza perturbando solo un punto de la solución cada vez
-    const int k_max = 2; // Puntos que se perturbarán como máximo
+    const int k_max = 3; // Puntos que se perturbarán como máximo
     Solution<T> best_solution = solution;
 
     //cout << CYAN << "Inicial sse: " << best_solution.get_sse() << RESET << endl << endl;
@@ -108,10 +108,35 @@ class GRASP : public Algorithm<T> { // Greedy Randomized Adaptive Search Procedu
       Solution<T> solucion_procesada(grupos, solucion_al_azar);
       solucion_procesada.evaluate();
 
+      // Código original
       // Se aplica la búsqueda local
       //cout << "Inicia búsqueda local VND" << endl;
-      Solution<T> optimo_local = VND(problem, solucion_procesada);
+      //Solution<T> optimo_local = VND(problem, solucion_procesada);
       //cout << "Finaliza búsqueda local VND" << endl << endl;
+
+      // MODIFICACION
+      // Intercambio
+      Solution<T> optimo_local_0 = local_search(problem, solucion_procesada, 0);
+      //cout << "SSE de la solución 0 procesada: " << optimo_local_0.get_sse() << endl;
+      // Insersión
+      Solution<T> optimo_local_1 = local_search(problem, solucion_procesada, 1);
+      //cout << "SSE de la solución 1 procesada: " << optimo_local_1.get_sse() << endl;
+      // Eliminación
+      Solution<T> optimo_local_2 = local_search(problem, solucion_procesada, 2);
+      //cout << "SSE de la solución 2 procesada: " << optimo_local_2.get_sse() << endl;
+
+      // Me quedo con la mejor de las tres
+      double min_val = std::min(optimo_local_0.get_sse(), optimo_local_1.get_sse());
+      min_val = std::min(min_val, optimo_local_2.get_sse());
+      Solution<T> optimo_local;
+      if (min_val == optimo_local_0.get_sse()) {
+        optimo_local = optimo_local_0;
+      } else if (min_val == optimo_local_1.get_sse()) {
+        optimo_local = optimo_local_1;
+      } else {
+        optimo_local = optimo_local_2;
+      }
+      // FIN MODIFICACION
 
       //cout << "SSE de la solución procesada: " << optimo_local.get_sse() << endl;
       //cout << "SSE de la mejor solución: " << best_solution.get_sse() << endl << endl;
@@ -166,7 +191,8 @@ class GRASP : public Algorithm<T> { // Greedy Randomized Adaptive Search Procedu
     return grupos;
   }
 
-  Solution<T> VND (const Problem<T>& problem, const Solution<T>& solution) {
+  // VND original
+  Solution<T> VND(const Problem<T>& problem, const Solution<T>& solution) {
     // Se comienza por la primera estructura de entorno
     reset_movements(); // Se activa solo la primera estructura de entorno
     Solution<T> the_solution = solution;
